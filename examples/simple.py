@@ -1,0 +1,3 @@
+import pyrein
+
+pyrein.hello()
