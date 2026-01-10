@@ -1,19 +1,12 @@
-from typing import Protocol, TypeVar
+from typing import TypeVar, Callable
 
 S = TypeVar("S")  # State
 M = TypeVar("M")  # Message / Input
 
 
-class Simulator(Protocol[S, M]):
-    def __call__(self, state: S, input: M) -> S: ...
-
-
-class Renderer(Protocol[S]):
-    def __call__(self, prev: S, curr: S, dt: float) -> None: ...
-
-
-class InputProvider(Protocol[M]):
-    def __call__(self) -> M: ...
+Simulator = Callable[[S, M], S]
+Renderer = Callable[[S, S, float], None]
+InputProvider = Callable[[], M]
 
 
 def run_game(

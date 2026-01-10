@@ -1,12 +1,12 @@
 import pyrein
 
 
-def simulate(state: int, message: int) -> int:
-    return state + message
+def simulate(state: int, input: int) -> int:
+    return state + input
 
 
-def render(current: int, next: int, time: float):
-    print(f"[render] 現在の状態は{current}です。")
+def render(prev: int, curr: int, dt: float):
+    print(f"[render] 現在の状態は{curr}です。")
 
 
 def input_provider() -> int:
