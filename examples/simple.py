@@ -9,4 +9,8 @@ def render(current: int, next: int, time: float):
     print(f"[render] 現在の状態は{current}です。")
 
 
-pyrein.run_game(0, simulate, render, 5)
+def input_provider() -> int:
+    return 5
+
+
+pyrein.run_game(0, simulate, render, input_provider)
