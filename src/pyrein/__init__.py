@@ -1,82 +1,85 @@
 import pygame
-from typing import Callable, Iterator
+from typing import Callable, Iterator, Any
 from datetime import datetime
 
 
 # 色の定義
 BLACK = (0, 0, 0)
 
+_prev: Any = None  # S
+_curr: Any = None  # S
 
-class Env[S, M]:
-    def __init__(self) -> None:
-        # Pygameの初期化
-        pygame.init()
+# Pygameの初期化
+pygame.init()
 
-        # 画面サイズ設定
-        WIDTH, HEIGHT = 800, 600
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Pygame サンプル")
+# 画面サイズ設定
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Pygame サンプル")
 
-        # フレームレート設定
-        self.clock = pygame.time.Clock()
-        self.FPS = 60
+# フレームレート設定
+clock = pygame.time.Clock()
+FPS = 60
 
-        # シミュレーションの時間間隔
-        self.dt = 1.0
+# シミュレーションの時間間隔
+dt = 1.0
+elapsed = 0.0
 
-    def _simulation_step(
-        self,
-        simulate: Callable[[S, M], S],
-        render: Callable[[S, S], Iterator[None]],
-        input_provider: Callable[[], M],
-    ) -> bool:
-        # 規定の時間が経過するまで描画ループ
-        simstart = datetime.now()
-        it = render(self._prev, self._curr)
-        self.elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
-        while self.elapsed < self.dt:
-            # 経過時間の計算
-            now = datetime.now()
-            self.elapsed = (now - simstart).total_seconds()
 
-            # イベント処理
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return False
+def _simulation_step[S, M](
+    simulate: Callable[[S, M], S],
+    render: Callable[[S, S], Iterator[None]],
+    input_provider: Callable[[], M],
+) -> bool:
+    global _prev, _curr, elapsed
+    # 規定の時間が経過するまで描画ループ
+    simstart = datetime.now()
+    it = render(_prev, _curr)
+    elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
+    while elapsed < dt:
+        # 経過時間の計算
+        now = datetime.now()
+        elapsed = (now - simstart).total_seconds()
 
-            # 画面を黒でクリア
-            self.screen.fill(BLACK)
+        # イベント処理
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
 
-            # 描画
-            next(it)
+        # 画面を黒でクリア
+        screen.fill(BLACK)
 
-            # 描画更新
-            pygame.display.flip()
+        # 描画
+        next(it)
 
-            # フレームレート維持
-            self.clock.tick(self.FPS)
+        # 描画更新
+        pygame.display.flip()
 
-        # 時間が来たらゲーム世界を進める
-        msg = input_provider()
-        next_state = simulate(self._curr, msg)
-        self._prev = self._curr
-        self._curr = next_state
+        # フレームレート維持
+        clock.tick(FPS)
 
-        return True
+    # 時間が来たらゲーム世界を進める
+    msg = input_provider()
+    next_state = simulate(_curr, msg)
+    _prev = _curr
+    _curr = next_state
 
-    def run(
-        self,
-        simulate: Callable[[S, M], S],
-        render: Callable[[S, S], Iterator[None]],
-        input_provider: Callable[[], M],
-        initial_state: S,
-    ) -> None:
-        print("run_gameはじめ")
-        self._prev = initial_state
-        self._curr = initial_state
+    return True
 
-        while self._simulation_step(simulate, render, input_provider):
-            pass
 
-        # Pygameの終了
-        pygame.quit()
+def run[S, M](
+    simulate: Callable[[S, M], S],
+    render: Callable[[S, S], Iterator[None]],
+    input_provider: Callable[[], M],
+    initial_state: S,
+) -> None:
+    global _prev, _curr
+    print("run_gameはじめ")
+    _prev = initial_state
+    _curr = initial_state
+
+    while _simulation_step(simulate, render, input_provider):
+        pass
+
+    # Pygameの終了
+    pygame.quit()
