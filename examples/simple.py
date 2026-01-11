@@ -33,4 +33,4 @@ def input_provider() -> int:
 env.simulate = simulate
 env.render = render
 env.input_provider = input_provider
-env.run_game(0)
+env.run(0)
