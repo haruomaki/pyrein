@@ -78,3 +78,9 @@ def run[S, M](
 
     # Pygameの終了
     pygame.quit()
+
+
+def lerp(start: float, end: float, easing: Callable[[float], float]) -> float:
+    global elapsed
+    ratio = easing(elapsed)
+    return start * (1 - ratio) + end * ratio
