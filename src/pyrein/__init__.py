@@ -3,38 +3,46 @@ from typing import Callable, Iterator
 from datetime import datetime
 
 
-# 色の定義
-BLACK = (0, 0, 0)
-
-# Pygameの初期化
-pygame.init()
-
-# 画面サイズ設定
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pygame サンプル")
-
-# フレームレート設定
-clock = pygame.time.Clock()
-FPS = 60
-
-# シミュレーションの時間間隔
-dt = 1.0
-elapsed = 0.0
-
-
 def run[S, M](
     simulate: Callable[[S, M], S],
     render: Callable[[S, S], Iterator[None]],
     input_provider: Callable[[], M],
     initial_state: S,
 ) -> None:
-    global elapsed
-    print("run_gameはじめ")
+    ##########################
+    ## グローバル変数の宣言 ##
+    ##########################
+
+    global screen, elapsed, fps
+
+    ################
+    ## 初期化処理 ##
+    ################
+
+    # Pygameの初期化
+    pygame.init()
+
+    # 画面サイズ設定
+    WIDTH, HEIGHT = 800, 600
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Pygame サンプル")
+
+    # フレームレート設定
+    clock = pygame.time.Clock()
+    fps = 60
+
+    # シミュレーションの時間間隔
+    dt = 1.0
+
+    # 色の定義
+    BLACK = (0, 0, 0)
+
+    ############################
+    ## シミュレーションループ ##
+    ############################
+
     prev = initial_state
     curr = initial_state
-
-    # シミュレーションループ
     running = True
     while running:
         # 規定の時間が経過するまで描画ループ
@@ -61,7 +69,7 @@ def run[S, M](
             pygame.display.flip()
 
             # フレームレート維持
-            clock.tick(FPS)
+            clock.tick(fps)
 
         # 時間が来たらゲーム世界を進める
         msg = input_provider()
