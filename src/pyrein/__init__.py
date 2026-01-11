@@ -1,13 +1,10 @@
 import pygame
-from typing import Callable, Iterator, Any
+from typing import Callable, Iterator
 from datetime import datetime
 
 
 # 色の定義
 BLACK = (0, 0, 0)
-
-_prev: Any = None  # S
-_curr: Any = None  # S
 
 # Pygameの初期化
 pygame.init()
@@ -32,17 +29,17 @@ def run[S, M](
     input_provider: Callable[[], M],
     initial_state: S,
 ) -> None:
-    global _prev, _curr, elapsed
+    global elapsed
     print("run_gameはじめ")
-    _prev = initial_state
-    _curr = initial_state
+    prev = initial_state
+    curr = initial_state
 
     # シミュレーションループ
     running = True
     while running:
         # 規定の時間が経過するまで描画ループ
         simstart = datetime.now()
-        it = render(_prev, _curr)
+        it = render(prev, curr)
         elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
         while running and elapsed < dt:
             # 経過時間の計算
@@ -68,9 +65,9 @@ def run[S, M](
 
         # 時間が来たらゲーム世界を進める
         msg = input_provider()
-        next_state = simulate(_curr, msg)
-        _prev = _curr
-        _curr = next_state
+        next_state = simulate(curr, msg)
+        prev = curr
+        curr = next_state
 
     # Pygameの終了
     pygame.quit()

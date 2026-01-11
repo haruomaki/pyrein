@@ -3,7 +3,7 @@ import pygame
 
 
 def simulate(state: int, input: int) -> int:
-    print(f"[simulate] {state=}")
+    # print(f"[simulate] {state=}")
     return state + input
 
 
@@ -14,7 +14,7 @@ def hokan(t: float) -> float:
 
 
 def render(prev: int, curr: int):
-    # print(f"[render] 現在の状態は{prev}です。")
+    print(f"[render] 現在の状態は{curr}です。")
     while True:
         t = pyrein.elapsed
         # 円を描画
