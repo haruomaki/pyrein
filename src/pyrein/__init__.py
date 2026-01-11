@@ -27,40 +27,39 @@ class Env[S, M]:
 
         # シミュレーションの時間間隔
         self.dt = 1.0
+
+    def _simulation_step(self) -> bool:
+        # 規定の時間が経過するまで描画ループ
+        simstart = datetime.now()
+        render = self.render(self._prev, self._curr)
         self.elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
+        while self.elapsed < self.dt:
+            # 経過時間の計算
+            now = datetime.now()
+            self.elapsed = (now - simstart).total_seconds()
 
-    def _step(self) -> bool:
-        # イベント処理
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return False
+            # イベント処理
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
 
-        # 時間の更新
-        now = datetime.now()
-        self.elapsed = (now - self.t).total_seconds()
+            # 画面を黒でクリア
+            self.screen.fill(BLACK)
 
-        # 規定の時間が経過したときだけゲーム世界を進める
-        if self.elapsed >= self.dt:
-            msg = self.input_provider()
-            next_state = self.simulate(self._curr, msg)
-            self._prev = self._curr
-            self._curr = next_state
-            self.t = now
-            self._rd = self.render(self._prev, self._curr)
-            return True
+            # 描画
+            next(render)
 
-        # 描画は毎フレーム行う
-        # 画面を黒でクリア
-        self.screen.fill(BLACK)
+            # 描画更新
+            pygame.display.flip()
 
-        # 描画
-        next(self._rd)
+            # フレームレート維持
+            self.clock.tick(self.FPS)
 
-        # 描画更新
-        pygame.display.flip()
-
-        # フレームレート維持
-        self.clock.tick(self.FPS)
+        # 時間が来たらゲーム世界を進める
+        msg = self.input_provider()
+        next_state = self.simulate(self._curr, msg)
+        self._prev = self._curr
+        self._curr = next_state
 
         return True
 
@@ -71,10 +70,8 @@ class Env[S, M]:
         print("run_gameはじめ")
         self._prev = initial_state
         self._curr = initial_state
-        self._rd = self.render(self._prev, self._curr)  # TODO: 冗長？
 
-        self.t = datetime.now()
-        while self._step():
+        while self._simulation_step():
             pass
 
         # Pygameの終了
