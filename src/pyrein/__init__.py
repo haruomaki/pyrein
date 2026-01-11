@@ -1,6 +1,5 @@
 import pygame
 from typing import Callable, Iterator
-from datetime import datetime
 
 
 def run[S, M](
@@ -46,13 +45,13 @@ def run[S, M](
     running = True
     while running:
         # 規定の時間が経過するまで描画ループ
-        simstart = datetime.now()
+        simstart = pygame.time.get_ticks()
         it = render(prev, curr)
         elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
         while running and elapsed < dt:
             # 経過時間の計算
-            now = datetime.now()
-            elapsed = (now - simstart).total_seconds()
+            now = pygame.time.get_ticks()
+            elapsed = (now - simstart) / 1000
 
             # イベント処理
             for event in pygame.event.get():
