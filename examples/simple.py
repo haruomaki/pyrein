@@ -30,7 +30,4 @@ def input_provider() -> int:
     return 5
 
 
-env.simulate = simulate
-env.render = render
-env.input_provider = input_provider
-env.run(0)
+env.run(simulate, render, input_provider, 0)

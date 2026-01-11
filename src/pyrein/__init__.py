@@ -8,10 +8,6 @@ BLACK = (0, 0, 0)
 
 
 class Env[S, M]:
-    simulate: Callable[[S, M], S]
-    render: Callable[[S, S], Iterator[None]]
-    input_provider: Callable[[], M]
-
     def __init__(self) -> None:
         # Pygameの初期化
         pygame.init()
@@ -28,10 +24,15 @@ class Env[S, M]:
         # シミュレーションの時間間隔
         self.dt = 1.0
 
-    def _simulation_step(self) -> bool:
+    def _simulation_step(
+        self,
+        simulate: Callable[[S, M], S],
+        render: Callable[[S, S], Iterator[None]],
+        input_provider: Callable[[], M],
+    ) -> bool:
         # 規定の時間が経過するまで描画ループ
         simstart = datetime.now()
-        render = self.render(self._prev, self._curr)
+        it = render(self._prev, self._curr)
         self.elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
         while self.elapsed < self.dt:
             # 経過時間の計算
@@ -47,7 +48,7 @@ class Env[S, M]:
             self.screen.fill(BLACK)
 
             # 描画
-            next(render)
+            next(it)
 
             # 描画更新
             pygame.display.flip()
@@ -56,8 +57,8 @@ class Env[S, M]:
             self.clock.tick(self.FPS)
 
         # 時間が来たらゲーム世界を進める
-        msg = self.input_provider()
-        next_state = self.simulate(self._curr, msg)
+        msg = input_provider()
+        next_state = simulate(self._curr, msg)
         self._prev = self._curr
         self._curr = next_state
 
@@ -65,13 +66,16 @@ class Env[S, M]:
 
     def run(
         self,
+        simulate: Callable[[S, M], S],
+        render: Callable[[S, S], Iterator[None]],
+        input_provider: Callable[[], M],
         initial_state: S,
     ) -> None:
         print("run_gameはじめ")
         self._prev = initial_state
         self._curr = initial_state
 
-        while self._simulation_step():
+        while self._simulation_step(simulate, render, input_provider):
             pass
 
         # Pygameの終了
