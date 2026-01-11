@@ -6,7 +6,7 @@ env = pyrein.Env[int, int]()
 
 
 def simulate(state: int, input: int) -> int:
-    print(f"simulateです。{state}")
+    print(f"[simulate] {state=}")
     return state + input
 
 
@@ -18,12 +18,11 @@ def hokan(t: float) -> float:
 
 def render(prev: int, curr: int):
     # print(f"[render] 現在の状態は{prev}です。")
-    t = 0
     while True:
+        t = env.elapsed
         # 円を描画
         x = (200 + prev * 10) * (1 - hokan(t)) + (200 + curr * 10) * hokan(t)
         pygame.draw.circle(env.screen, (23, 200, 100), (x, 200), 80)
-        t += 0.03  # TODO: てきとー
         yield
 
 

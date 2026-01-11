@@ -1,23 +1,16 @@
 import pygame
-from typing import TypeVar, Callable, Iterator
-from datetime import datetime, timedelta
+from typing import Callable, Iterator
+from datetime import datetime
 
-S = TypeVar("S")  # State
-M = TypeVar("M")  # Message / Input
-
-Simulator = Callable[[S, M], S]
-Renderer = Callable[[S, S], Iterator[None]]
-InputProvider = Callable[[], M]
 
 # 色の定義
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
 
 
 class Env[S, M]:
-    simulate: Simulator[S, M]
-    render: Renderer[S]
-    input_provider: InputProvider[M]
+    simulate: Callable[[S, M], S]
+    render: Callable[[S, S], Iterator[None]]
+    input_provider: Callable[[], M]
 
     def __init__(self) -> None:
         # Pygameの初期化
@@ -33,7 +26,8 @@ class Env[S, M]:
         self.FPS = 60
 
         # シミュレーションの時間間隔
-        self.dt = 1
+        self.dt = 1.0
+        self.elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
 
     def run_game(
         self,
@@ -52,13 +46,17 @@ class Env[S, M]:
                 if event.type == pygame.QUIT:
                     running = False
 
+            # 時間の更新
+            now = datetime.now()
+            self.elapsed = (now - t).total_seconds()
+
             # 規定の時間が経過したときだけゲーム世界を進める
-            if datetime.now() - t >= timedelta(seconds=self.dt):
+            if self.elapsed >= self.dt:
                 msg = self.input_provider()
                 next_state = self.simulate(curr, msg)
                 prev = curr
                 curr = next_state
-                t = datetime.now()  # TODO: 冗長？
+                t = now
                 rd = self.render(prev, curr)
                 continue
 
@@ -74,3 +72,6 @@ class Env[S, M]:
 
             # フレームレート維持
             self.clock.tick(self.FPS)
+
+        # Pygameの終了
+        pygame.quit()
