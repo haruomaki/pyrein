@@ -21,7 +21,15 @@ def render(prev: int, curr: int):
         yield
 
 
-def input_provider() -> int:
+def input_provider():
+    while pyrein.elapsed < 1:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            print("<-")
+        if keys[pygame.K_RIGHT]:
+            print("->")
+        yield
+
     return 5
 
 
