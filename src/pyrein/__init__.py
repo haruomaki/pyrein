@@ -1,11 +1,11 @@
 import pygame
-from typing import Callable, Iterator, Generator
+from typing import Callable, Generator, NoReturn
 
 
 def run[S, M](
     simulate: Callable[[S, M], S],
-    render: Callable[[S, S], Iterator[None]],
-    input_provider: Callable[[], Generator[None, None, M]],
+    decide: Callable[[], Generator[None, None, M]],
+    render: Callable[[S, S], Generator[None, None, NoReturn]],
     initial_state: S,
 ) -> None:
     pygame.init()  # Pygameの初期化
@@ -44,7 +44,7 @@ def run[S, M](
             # 規定の時間が経過するまで描画ループ
             simstart = pygame.time.get_ticks()
             draw = render(prev, curr)
-            act = input_provider()
+            act = decide()
             elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
             while True:
                 # 経過時間の計算
@@ -56,13 +56,9 @@ def run[S, M](
                     if event.type == pygame.QUIT:
                         return
 
-                # 画面を黒でクリア
-                screen.fill(BLACK)
-
                 # 描画
+                screen.fill(BLACK)
                 next(draw)
-
-                # 描画更新
                 pygame.display.flip()
 
                 # キー入力受け付け

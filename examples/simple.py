@@ -2,9 +2,9 @@ import pyrein
 import pygame
 
 
-def simulate(state: int, input: int) -> int:
+def simulate(state: int, msg: int) -> int:
     # print(f"[simulate] {state=}")
-    return state + input
+    return state + msg
 
 
 def hokan(t: float) -> float:
@@ -21,7 +21,7 @@ def render(prev: int, curr: int):
         yield
 
 
-def input_provider():
+def decide():
     while pyrein.elapsed < 1:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -33,4 +33,4 @@ def input_provider():
     return 5
 
 
-pyrein.run(simulate, render, input_provider, 0)
+pyrein.run(simulate, decide, render, 0)
