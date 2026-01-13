@@ -1,5 +1,6 @@
 import pyrein
 import pygame
+from pyrein.easing import ease_out
 
 
 def simulate(state: int, msg: int) -> int:
@@ -7,16 +8,11 @@ def simulate(state: int, msg: int) -> int:
     return state + msg
 
 
-def hokan(t: float) -> float:
-    t = min(t, 0.5)
-    return 1 - 4 * (t - 0.5) ** 2
-
-
 def render(prev: int, curr: int):
     print(f"[render] 現在の状態は{curr}です。")
     while True:
         # 円を描画
-        x = pyrein.lerp(200 + prev * 10, 200 + curr * 10, hokan)
+        x = pyrein.lerp(200 + prev * 10, 200 + curr * 10, ease_out(0.5))
         pygame.draw.circle(pyrein.screen, (23, 200, 100), (x, 200), 80)
         yield
 
@@ -30,7 +26,7 @@ def decide():
             print("->")
         yield
 
-    return 5
+    return 10
 
 
 pyrein.run(simulate, decide, render, 0)
