@@ -1,5 +1,6 @@
 import pygame
 from typing import Callable, Generator, NoReturn
+import copy
 
 
 def run[S, M](
@@ -72,7 +73,7 @@ def run[S, M](
                 clock.tick(fps)
 
             # 時間が来たらゲーム世界を進める
-            next_state = simulate(curr, msg)
+            next_state = simulate(copy.copy(curr), msg)
             prev = curr
             curr = next_state
     finally:

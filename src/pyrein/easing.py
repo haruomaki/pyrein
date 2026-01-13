@@ -8,9 +8,9 @@ def clamp(start: float = 0, end: float = 1) -> Callable[[float], float]:
     return inner
 
 
-def ease_out(length: float, power: float = 2) -> Callable[[float], float]:
+def ease_out(duration: float, power: float = 2) -> Callable[[float], float]:
     def inner(x: float) -> float:
-        x = clamp(0, length)(x)
-        return 1 - ((length - x) / length) ** power
+        x = clamp(0, duration)(x)
+        return 1 - ((duration - x) / duration) ** power
 
     return inner
