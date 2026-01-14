@@ -52,7 +52,9 @@ def run[S, M](
                 now = pygame.time.get_ticks()
                 elapsed = (now - simstart) / 1000
 
-                # イベント処理
+                # イベント処理・終了判定
+                if pygame.key.get_pressed()[pygame.K_q]:
+                    return
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         return
