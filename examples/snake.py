@@ -27,6 +27,7 @@ Action = int | None
 
 
 dt = 0.3
+pyrein.draw.camera.set_offset(GRID_WIDTH / 2 * GRID_SIZE, GRID_HEIGHT / 2 * GRID_SIZE)
 
 
 def simulate(state: State, action: Action) -> State:
