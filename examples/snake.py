@@ -6,7 +6,7 @@ from dataclasses import dataclass
 # 色の定義
 BACKGROUND = (15, 56, 15)
 GRID_COLOR = (20, 80, 20)
-SNAKE_HEAD = (50, 205, 50)  # ライムグリーン
+SNAKE_HEAD = (23, 200, 100)  # ミントグリーン
 SNAKE_BODY = (34, 139, 34)  # フォレストグリーン
 FOOD_COLOR = (220, 20, 60)  # クリムゾン
 TEXT_COLOR = (255, 255, 255)
@@ -33,7 +33,6 @@ def simulate(state: State, action: Action) -> State:
     BACK = [(0, 1), (1, 0), (2, 3), (3, 2)]
     if action is not None and not (state.direction, action) in BACK:
         state.direction = action
-    print(f"{state.direction=}")
     state.x += [0, 0, -1, 1][state.direction]
     state.y += [-1, 1, 0, 0][state.direction]
     return state
@@ -42,15 +41,13 @@ def simulate(state: State, action: Action) -> State:
 def draw_grid():
     """グリッド線を描画"""
     for w in range(GRID_WIDTH + 1):
-        pygame.draw.line(
-            pyrein.screen,
+        pyrein.draw.line(
             GRID_COLOR,
             (w * GRID_SIZE, 0),
             (w * GRID_SIZE, GRID_HEIGHT * GRID_SIZE),
         )
     for h in range(GRID_HEIGHT + 1):
-        pygame.draw.line(
-            pyrein.screen,
+        pyrein.draw.line(
             GRID_COLOR,
             (0, h * GRID_SIZE),
             (GRID_WIDTH * GRID_SIZE, h * GRID_SIZE),
@@ -58,13 +55,12 @@ def draw_grid():
 
 
 def render(prev: State, curr: State):
-    print(f"[render] 現在の状態は{curr}です。")
     while True:
         draw_grid()
         # 円を描画
         x = pyrein.lerp(prev.x * GRID_SIZE, curr.x * GRID_SIZE, ease_out(dt, 1.5))
         y = pyrein.lerp(prev.y * GRID_SIZE, curr.y * GRID_SIZE, ease_out(dt, 1.5))
-        pygame.draw.circle(pyrein.screen, (23, 200, 100), (x, y), GRID_SIZE / 2)
+        pyrein.draw.circle(SNAKE_HEAD, (x, y), GRID_SIZE / 2)
         yield
 
 

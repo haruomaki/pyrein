@@ -3,6 +3,10 @@ from typing import Callable, Generator, NoReturn
 import copy
 
 
+# pyrein.draw公開
+from . import draw  # pyright: ignore[reportUnusedImport]
+
+
 def run[S, M](
     simulate: Callable[[S, M], S],
     decide: Callable[[], Generator[None, None, M]],
