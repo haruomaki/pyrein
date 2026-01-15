@@ -10,11 +10,10 @@ Coordinate = Union[Tuple[float, float], Sequence[float], pygame.Vector2]
 
 
 class Camera:
-    def __init__(self, screen_size: Tuple[int, int] = (800, 600)):
+    def __init__(self):
         self.offset = pygame.Vector2(0, 0)
         self.zoom = 1.0
         self.anchor = pygame.Vector2(0.5, 0.5)  # デフォルトで中央
-        self.screen_size = pygame.Vector2(screen_size)
 
     def apply(self, world_pos: Any) -> pygame.Vector2:  # type: ignore
         """ワールド座標 → スクリーン座標"""
@@ -23,9 +22,8 @@ class Camera:
         result = (world_pos - self.offset) * self.zoom
 
         # 2. アンカーポイントの適用
-        anchor_offset = pygame.Vector2(
-            self.screen_size.x * self.anchor.x, self.screen_size.y * self.anchor.y
-        )
+        (sx, sy) = pygame.display.get_window_size()
+        anchor_offset = pygame.Vector2(sx * self.anchor.x, sy * self.anchor.y)
         result += anchor_offset
 
         return result
@@ -39,9 +37,7 @@ class Camera:
         self.anchor = pygame.Vector2(x, y)
 
 
-camera = Camera(screen_size=(800, 600))
-camera.set_anchor(0.5, 0.5)  # 画面中央を原点に
-camera.offset = pygame.Vector2(0, 0)  # カメラ位置
+camera = Camera()
 
 
 def line(
