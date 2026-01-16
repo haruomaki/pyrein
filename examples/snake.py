@@ -3,6 +3,7 @@ import pygame
 from pygame import Vector2 as Vec2
 from pyrein.easing import ease_out
 from dataclasses import dataclass
+from random import choice
 
 # 色の定義
 BACKGROUND = (15, 56, 15)
@@ -21,6 +22,7 @@ GRID_HEIGHT = 10
 class State:
     direction: int
     body: list[Vec2]
+    apple: Vec2
 
 
 Action = int | None
@@ -36,8 +38,27 @@ def simulate(state: State, action: Action) -> State:
     if action is not None and not (state.direction, action) in BACK:
         state.direction = action
     new_head = state.body[0] + DIRECTIONS[state.direction]
-    state.body = [new_head] + state.body[0:-1]
-    print(state.body)
+
+    if state.body[0] == state.apple:
+        # しっぽはそのままに頭が長くなる
+        state.body = [new_head] + state.body
+
+        # 新しいリンゴが出現
+        cand: set[tuple[float, float]] = set()
+        for w in range(GRID_WIDTH):
+            for h in range(GRID_HEIGHT):
+                cand.add((w, h))
+        for b in state.body:
+            cand.remove((b.x, b.y))
+
+        apple = choice(list(cand))
+        # print(apple)
+        state.apple = Vec2(apple)
+    else:
+        # しっぽが消えて頭が長くなる
+        state.body = [new_head] + state.body[0:-1]
+        print(state.body[0], state.apple)
+
     return state
 
 
@@ -60,13 +81,20 @@ def draw_grid():
 def render(prev: State, curr: State):
     while True:
         draw_grid()
+
+        # リンゴを描画
+        pyrein.draw.circle(FOOD_COLOR, curr.apple * GRID_SIZE, GRID_SIZE / 3)
+
         # 円を描画
+        if len(prev.body) != len(curr.body):
+            prev.body = [prev.body[0]] + prev.body
         for i in range(len(curr.body)):
             pr = prev.body[i]
             cr = curr.body[i]
             x = pyrein.lerp(pr.x * GRID_SIZE, cr.x * GRID_SIZE, ease_out(dt, 1.5))
             y = pyrein.lerp(pr.y * GRID_SIZE, cr.y * GRID_SIZE, ease_out(dt, 1.5))
             pyrein.draw.circle(SNAKE_HEAD, (x, y), GRID_SIZE / 2)
+
         yield
 
 
@@ -91,5 +119,5 @@ pyrein.run(
     simulate,
     decide,
     render,
-    State(1, [Vec2(0, 0), Vec2(1, 0), Vec2(2, 0), Vec2(3, 0), Vec2(4, 0)]),
+    State(1, [Vec2(0, 0), Vec2(1, 0), Vec2(2, 0), Vec2(3, 0), Vec2(4, 0)], Vec2(5, 5)),
 )
