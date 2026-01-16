@@ -20,8 +20,7 @@ GRID_HEIGHT = 10
 @dataclass
 class State:
     direction: int
-    xs: list[int]
-    ys: list[int]
+    body: list[Vec2]
 
 
 Action = int | None
@@ -29,17 +28,16 @@ Action = int | None
 
 dt = 0.3
 pyrein.draw.camera.set_offset(GRID_WIDTH / 2 * GRID_SIZE, GRID_HEIGHT / 2 * GRID_SIZE)
+DIRECTIONS = [Vec2(0, -1), Vec2(0, 1), Vec2(-1, 0), Vec2(1, 0)]
 
 
 def simulate(state: State, action: Action) -> State:
     BACK = [(0, 1), (1, 0), (2, 3), (3, 2)]
     if action is not None and not (state.direction, action) in BACK:
         state.direction = action
-    new_x = state.xs[0] + [0, 0, -1, 1][state.direction]
-    new_y = state.ys[0] + [-1, 1, 0, 0][state.direction]
-    state.xs = [new_x] + state.xs[0:-1]
-    state.ys = [new_y] + state.ys[0:-1]
-    print(state.xs)
+    new_head = state.body[0] + DIRECTIONS[state.direction]
+    state.body = [new_head] + state.body[0:-1]
+    print(state.body)
     return state
 
 
@@ -63,9 +61,9 @@ def render(prev: State, curr: State):
     while True:
         draw_grid()
         # 円を描画
-        for i in range(len(curr.xs)):
-            pr = Vec2(prev.xs[i], prev.ys[i])
-            cr = Vec2(curr.xs[i], curr.ys[i])
+        for i in range(len(curr.body)):
+            pr = prev.body[i]
+            cr = curr.body[i]
             x = pyrein.lerp(pr.x * GRID_SIZE, cr.x * GRID_SIZE, ease_out(dt, 1.5))
             y = pyrein.lerp(pr.y * GRID_SIZE, cr.y * GRID_SIZE, ease_out(dt, 1.5))
             pyrein.draw.circle(SNAKE_HEAD, (x, y), GRID_SIZE / 2)
@@ -89,4 +87,9 @@ def decide():
     return action
 
 
-pyrein.run(simulate, decide, render, State(1, [0, 1, 2, 3, 4], [0, 0, 0, 0, 0]))
+pyrein.run(
+    simulate,
+    decide,
+    render,
+    State(1, [Vec2(0, 0), Vec2(1, 0), Vec2(2, 0), Vec2(3, 0), Vec2(4, 0)]),
+)
