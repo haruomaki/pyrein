@@ -14,8 +14,8 @@ FOOD_COLOR = (220, 20, 60)  # クリムゾン
 TEXT_COLOR = (255, 255, 255)
 
 GRID_SIZE = 30
-GRID_WIDTH = 10
-GRID_HEIGHT = 10
+GRID_WIDTH = 6
+GRID_HEIGHT = 6
 
 
 @dataclass
@@ -29,7 +29,9 @@ Action = int | None
 
 
 dt = 0.3
-pyrein.draw.camera.set_offset(GRID_WIDTH / 2 * GRID_SIZE, GRID_HEIGHT / 2 * GRID_SIZE)
+pyrein.draw.camera.set_offset(
+    (GRID_WIDTH - 1) / 2 * GRID_SIZE, (GRID_HEIGHT - 1) / 2 * GRID_SIZE
+)
 DIRECTIONS = [Vec2(0, -1), Vec2(0, 1), Vec2(-1, 0), Vec2(1, 0)]
 
 
@@ -38,6 +40,18 @@ def simulate(state: State, action: Action) -> State:
     if action is not None and not (state.direction, action) in BACK:
         state.direction = action
     new_head = state.body[0] + DIRECTIONS[state.direction]
+
+    # ゲームオーバー判定
+    if (
+        new_head.x < 0
+        or GRID_WIDTH <= new_head.x
+        or new_head.y < 0
+        or GRID_HEIGHT <= new_head.y
+        or new_head in state.body
+    ):
+        print("ゲームオーバー！")
+        state.body = [Vec2(GRID_WIDTH // 3, GRID_HEIGHT // 2)]
+        return state
 
     if state.body[0] == state.apple:
         # しっぽはそのままに頭が長くなる
@@ -64,17 +78,17 @@ def simulate(state: State, action: Action) -> State:
 
 def draw_grid():
     """グリッド線を描画"""
-    for w in range(GRID_WIDTH + 1):
+    for w in range(GRID_WIDTH):
         pyrein.draw.line(
             GRID_COLOR,
             (w * GRID_SIZE, 0),
-            (w * GRID_SIZE, GRID_HEIGHT * GRID_SIZE),
+            (w * GRID_SIZE, (GRID_HEIGHT - 1) * GRID_SIZE),
         )
-    for h in range(GRID_HEIGHT + 1):
+    for h in range(GRID_HEIGHT):
         pyrein.draw.line(
             GRID_COLOR,
             (0, h * GRID_SIZE),
-            (GRID_WIDTH * GRID_SIZE, h * GRID_SIZE),
+            ((GRID_WIDTH - 1) * GRID_SIZE, h * GRID_SIZE),
         )
 
 
