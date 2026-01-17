@@ -35,6 +35,10 @@ pyrein.draw.camera.set_offset(
 DIRECTIONS = [Vec2(0, -1), Vec2(0, 1), Vec2(-1, 0), Vec2(1, 0)]
 
 
+def initialize() -> State:
+    return State(1, [Vec2(0, 0)], Vec2(5, 5))
+
+
 def simulate(state: State, action: Action) -> State:
     BACK = [(0, 1), (1, 0), (2, 3), (3, 2)]
     if action is not None and not (state.direction, action) in BACK:
@@ -133,5 +137,5 @@ pyrein.run(
     simulate,
     decide,
     render,
-    State(1, [Vec2(0, 0), Vec2(1, 0), Vec2(2, 0), Vec2(3, 0), Vec2(4, 0)], Vec2(5, 5)),
+    initialize,
 )

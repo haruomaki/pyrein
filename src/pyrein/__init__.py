@@ -11,7 +11,7 @@ def run[S, M](
     simulate: Callable[[S, M], S],
     decide: Callable[[], Generator[None, None, M]],
     render: Callable[[S, S], Generator[None, None, NoReturn]],
-    initial_state: S,
+    initialize: Callable[[], S],
 ) -> None:
     pygame.init()  # Pygameの初期化
     try:  # 必ずpygame.quit()が呼ばれるようにtryで囲む
@@ -42,8 +42,8 @@ def run[S, M](
         ## シミュレーションループ ##
         ############################
 
-        prev = initial_state
-        curr = initial_state
+        prev = initialize()
+        curr = initialize()
 
         while True:
             # 規定の時間が経過するまで描画ループ
