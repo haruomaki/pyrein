@@ -8,7 +8,7 @@ from . import draw  # pyright: ignore[reportUnusedImport]
 
 
 def run[S, M](
-    simulate: Callable[[S, M], S],
+    simulate: Callable[[S, M], S | None],
     decide: Callable[[], Generator[None, None, M]],
     render: Callable[[S, S], Generator[None, None, NoReturn]],
     initialize: Callable[[], S],
@@ -80,8 +80,13 @@ def run[S, M](
 
             # 時間が来たらゲーム世界を進める
             next_state = simulate(copy.copy(curr), msg)
-            prev = curr
-            curr = next_state
+            if next_state is None:
+                prev = curr
+                curr = initialize()
+            else:
+                prev = curr
+                curr = next_state
+
     finally:
         # Pygameの終了
         pygame.quit()

@@ -8,4 +8,5 @@ version = "0.1.0"
 description = "PyRein is a framework for building games as discrete environments with real-time rendering and interchangeable inputs."
 dependencies = [
     "pygame>=2.5",
+    "gymnasium",
 ]

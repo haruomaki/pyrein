@@ -39,7 +39,7 @@ def initialize() -> State:
     return State(1, [Vec2(0, 0)], Vec2(5, 5))
 
 
-def simulate(state: State, action: Action) -> State:
+def simulate(state: State, action: Action) -> State | None:
     BACK = [(0, 1), (1, 0), (2, 3), (3, 2)]
     if action is not None and not (state.direction, action) in BACK:
         state.direction = action
@@ -51,11 +51,10 @@ def simulate(state: State, action: Action) -> State:
         or GRID_WIDTH <= new_head.x
         or new_head.y < 0
         or GRID_HEIGHT <= new_head.y
-        or new_head in state.body
+        or new_head in state.body[:-1]
     ):
-        print("ゲームオーバー！")
-        state.body = [Vec2(GRID_WIDTH // 3, GRID_HEIGHT // 2)]
-        return state
+        print("ゲームオーバー！", len(state.body))
+        return None
 
     if state.body[0] == state.apple:
         # しっぽはそのままに頭が長くなる
@@ -69,6 +68,9 @@ def simulate(state: State, action: Action) -> State:
         for b in state.body:
             cand.remove((b.x, b.y))
 
+        if len(cand) == 0:
+            print("ゲームクリア！", len(state.body))
+            return None
         apple = choice(list(cand))
         # print(apple)
         state.apple = Vec2(apple)
