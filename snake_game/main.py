@@ -9,20 +9,20 @@ from random import choice
 BACKGROUND = (15, 56, 15)
 GRID_COLOR = (20, 80, 20)
 SNAKE_HEAD = (23, 200, 100)  # ミントグリーン
-SNAKE_BODY = (34, 139, 34)  # フォレストグリーン
+SNAKE_BODY = (46, 139, 87)  # シーグリーン
 FOOD_COLOR = (220, 20, 60)  # クリムゾン
 TEXT_COLOR = (255, 255, 255)
 
 GRID_SIZE = 30
-GRID_WIDTH = 6
-GRID_HEIGHT = 6
+GRID_WIDTH = 4
+GRID_HEIGHT = 4
 
 
 @dataclass
 class State:
     direction: int
     body: list[Vec2]
-    apple: Vec2
+    apple: Vec2 | None
 
 
 Action = int | None
@@ -36,7 +36,7 @@ DIRECTIONS = [Vec2(0, -1), Vec2(0, 1), Vec2(-1, 0), Vec2(1, 0)]
 
 
 def initialize() -> State:
-    return State(1, [Vec2(0, 0)], Vec2(5, 5))
+    return State(1, [Vec2(0, 0)], Vec2(3, 3))
 
 
 def simulate(state: State, action: Action) -> State | None:
@@ -68,12 +68,11 @@ def simulate(state: State, action: Action) -> State | None:
         for b in state.body:
             cand.remove((b.x, b.y))
 
-        if len(cand) == 0:
-            print("ゲームクリア！", len(state.body))
-            return None
-        apple = choice(list(cand))
-        # print(apple)
-        state.apple = Vec2(apple)
+        if len(cand) <= 5:
+            state.apple = None
+        else:
+            apple = choice(list(cand))
+            state.apple = Vec2(apple)
     else:
         # しっぽが消えて頭が長くなる
         state.body = [new_head] + state.body[0:-1]
@@ -103,17 +102,19 @@ def render(prev: State, curr: State):
         draw_grid()
 
         # リンゴを描画
-        engine.draw.circle(FOOD_COLOR, curr.apple * GRID_SIZE, GRID_SIZE / 3)
+        if curr.apple:
+            engine.draw.circle(FOOD_COLOR, curr.apple * GRID_SIZE, GRID_SIZE / 3)
 
-        # 円を描画
+        # 円を描画。頭を最前面に描画するために逆順に
         if len(prev.body) != len(curr.body):
             prev.body = [prev.body[0]] + prev.body
-        for i in range(len(curr.body)):
+        for i in range(len(curr.body) - 1, -1, -1):
             pr = prev.body[i]
             cr = curr.body[i]
             x = engine.lerp(pr.x * GRID_SIZE, cr.x * GRID_SIZE, ease_out(dt, 1.5))
             y = engine.lerp(pr.y * GRID_SIZE, cr.y * GRID_SIZE, ease_out(dt, 1.5))
-            engine.draw.circle(SNAKE_HEAD, (x, y), GRID_SIZE / 2)
+            color = SNAKE_HEAD if i == 0 else SNAKE_BODY
+            engine.draw.circle(color, (x, y), GRID_SIZE / 2)
 
         yield
 
