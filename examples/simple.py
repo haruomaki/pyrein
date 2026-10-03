@@ -13,6 +13,10 @@ class State:
 Action = int | None
 
 
+def initialize() -> State:
+    return State(0, 0)
+
+
 def simulate(state: State, action: Action) -> State:
     if action is None:
         return state
@@ -48,4 +52,4 @@ def decide():
     return action
 
 
-pyrein.run(simulate, decide, render, State(0, 0))
+pyrein.run(simulate, decide, render, initialize)
