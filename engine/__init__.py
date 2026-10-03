@@ -9,7 +9,7 @@ from . import draw  # pyright: ignore[reportUnusedImport]
 def run[S, M](
     simulate: Callable[[S, M], bool],
     decide: Callable[[], Generator[None, None, M]],
-    render: Callable[[S], Generator[None, None, NoReturn]],
+    render: Callable[[S], None],
     initialize: Callable[[], S],
 ) -> None:
     pygame.init()  # Pygameの初期化
@@ -41,12 +41,13 @@ def run[S, M](
         ## シミュレーションループ ##
         ############################
 
+        global step
+        step = 0
         state = initialize()
 
         while True:
             # 規定の時間が経過するまで描画ループ
             simstart = pygame.time.get_ticks()
-            draw = render(state)
             act = decide()
             elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
             while True:
@@ -63,7 +64,7 @@ def run[S, M](
 
                 # 描画
                 screen.fill(BLACK)
-                next(draw)
+                render(state)
                 pygame.display.flip()
 
                 # キー入力受け付け
@@ -78,6 +79,7 @@ def run[S, M](
 
             # 時間が来たらゲーム世界を進める
             simulation_running = simulate(state, msg)
+            step += 1
             if not simulation_running:
                 state = initialize()
 

@@ -39,38 +39,40 @@ def draw_grid():
 
 
 prev: game.State | None = None
+curr: game.State | None = None
+current_step: int = 0
 
 
 def render(state: game.State):
-    global prev
-    if prev is None:
+    global prev, curr, current_step
+    if engine.step == 0:
         prev = copy.copy(state)
+        curr = copy.copy(state)
+    elif engine.step != current_step:
+        current_step = engine.step
+        # print("prevとcurrが更新")
+        prev = curr
+        curr = copy.copy(state)
 
-    while True:
-        draw_grid()
+    assert prev is not None
+    assert curr is not None
 
-        # リンゴを描画
-        if state.apple:
-            engine.draw.circle(
-                FOOD_COLOR, state.apple * game.GRID_SIZE, game.GRID_SIZE / 3
-            )
+    draw_grid()
 
-        # 円を描画。頭を最前面に描画するために逆順に
-        if len(prev.body) != len(state.body):
-            prev.body = [prev.body[0]] + prev.body
-        for i in range(len(state.body) - 1, -1, -1):
-            pr = prev.body[i]
-            cr = state.body[i]
-            x = engine.lerp(
-                pr.x * game.GRID_SIZE, cr.x * game.GRID_SIZE, ease_out(dt, 1.5)
-            )
-            y = engine.lerp(
-                pr.y * game.GRID_SIZE, cr.y * game.GRID_SIZE, ease_out(dt, 1.5)
-            )
-            color = SNAKE_HEAD if i == 0 else SNAKE_BODY
-            engine.draw.circle(color, (x, y), game.GRID_SIZE / 2)
+    # リンゴを描画
+    if curr.apple is not None:
+        engine.draw.circle(FOOD_COLOR, curr.apple * game.GRID_SIZE, game.GRID_SIZE / 3)
 
-        yield
+    # 円を描画。頭を最前面に描画するために逆順に
+    if len(prev.body) != len(curr.body):
+        prev.body = [prev.body[0]] + prev.body
+    for i in range(len(curr.body) - 1, -1, -1):
+        pr = prev.body[i]
+        cr = curr.body[i]
+        x = engine.lerp(pr.x * game.GRID_SIZE, cr.x * game.GRID_SIZE, ease_out(dt, 1.5))
+        y = engine.lerp(pr.y * game.GRID_SIZE, cr.y * game.GRID_SIZE, ease_out(dt, 1.5))
+        color = SNAKE_HEAD if i == 0 else SNAKE_BODY
+        engine.draw.circle(color, (x, y), game.GRID_SIZE / 2)
 
 
 def decide():
