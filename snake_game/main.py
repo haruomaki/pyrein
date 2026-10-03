@@ -1,7 +1,7 @@
-import pyrein
+import engine
 import pygame
 from pygame import Vector2 as Vec2
-from pyrein.easing import ease_out
+from engine.easing import ease_out
 from dataclasses import dataclass
 from random import choice
 
@@ -29,7 +29,7 @@ Action = int | None
 
 
 dt = 0.3
-pyrein.draw.camera.set_offset(
+engine.draw.camera.set_offset(
     (GRID_WIDTH - 1) / 2 * GRID_SIZE, (GRID_HEIGHT - 1) / 2 * GRID_SIZE
 )
 DIRECTIONS = [Vec2(0, -1), Vec2(0, 1), Vec2(-1, 0), Vec2(1, 0)]
@@ -85,13 +85,13 @@ def simulate(state: State, action: Action) -> State | None:
 def draw_grid():
     """グリッド線を描画"""
     for w in range(GRID_WIDTH):
-        pyrein.draw.line(
+        engine.draw.line(
             GRID_COLOR,
             (w * GRID_SIZE, 0),
             (w * GRID_SIZE, (GRID_HEIGHT - 1) * GRID_SIZE),
         )
     for h in range(GRID_HEIGHT):
-        pyrein.draw.line(
+        engine.draw.line(
             GRID_COLOR,
             (0, h * GRID_SIZE),
             ((GRID_WIDTH - 1) * GRID_SIZE, h * GRID_SIZE),
@@ -103,7 +103,7 @@ def render(prev: State, curr: State):
         draw_grid()
 
         # リンゴを描画
-        pyrein.draw.circle(FOOD_COLOR, curr.apple * GRID_SIZE, GRID_SIZE / 3)
+        engine.draw.circle(FOOD_COLOR, curr.apple * GRID_SIZE, GRID_SIZE / 3)
 
         # 円を描画
         if len(prev.body) != len(curr.body):
@@ -111,16 +111,16 @@ def render(prev: State, curr: State):
         for i in range(len(curr.body)):
             pr = prev.body[i]
             cr = curr.body[i]
-            x = pyrein.lerp(pr.x * GRID_SIZE, cr.x * GRID_SIZE, ease_out(dt, 1.5))
-            y = pyrein.lerp(pr.y * GRID_SIZE, cr.y * GRID_SIZE, ease_out(dt, 1.5))
-            pyrein.draw.circle(SNAKE_HEAD, (x, y), GRID_SIZE / 2)
+            x = engine.lerp(pr.x * GRID_SIZE, cr.x * GRID_SIZE, ease_out(dt, 1.5))
+            y = engine.lerp(pr.y * GRID_SIZE, cr.y * GRID_SIZE, ease_out(dt, 1.5))
+            engine.draw.circle(SNAKE_HEAD, (x, y), GRID_SIZE / 2)
 
         yield
 
 
 def decide():
     action: Action = None
-    while pyrein.elapsed < dt:
+    while engine.elapsed < dt:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             action = 0
@@ -135,7 +135,7 @@ def decide():
     return action
 
 
-pyrein.run(
+engine.run(
     simulate,
     decide,
     render,

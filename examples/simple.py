@@ -1,6 +1,6 @@
-import pyrein
+import engine
 import pygame
-from pyrein.easing import ease_out
+from engine.easing import ease_out
 from dataclasses import dataclass
 
 
@@ -29,15 +29,15 @@ def render(prev: State, curr: State):
     print(f"[render] 現在の状態は{curr}です。")
     while True:
         # 円を描画
-        x = pyrein.lerp(200 + prev.x * 30, 200 + curr.x * 30, ease_out(0.5))
-        y = pyrein.lerp(200 + prev.y * 30, 200 + curr.y * 30, ease_out(0.5))
-        pygame.draw.circle(pyrein.screen, (23, 200, 100), (x, y), 80)
+        x = engine.lerp(200 + prev.x * 30, 200 + curr.x * 30, ease_out(0.5))
+        y = engine.lerp(200 + prev.y * 30, 200 + curr.y * 30, ease_out(0.5))
+        pygame.draw.circle(engine.screen, (23, 200, 100), (x, y), 80)
         yield
 
 
 def decide():
     action: Action = None
-    while pyrein.elapsed < 1:
+    while engine.elapsed < 1:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             action = 0
@@ -52,4 +52,4 @@ def decide():
     return action
 
 
-pyrein.run(simulate, decide, render, initialize)
+engine.run(simulate, decide, render, initialize)
