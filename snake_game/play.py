@@ -3,6 +3,7 @@ import snake_game.game as game
 import pygame
 from pygame import Vector2 as Vec2
 from engine.easing import ease_out
+import copy
 
 # 色の定義
 BACKGROUND = (15, 56, 15)
@@ -37,22 +38,29 @@ def draw_grid():
         )
 
 
-def render(prev: game.State, curr: game.State):
+prev: game.State | None = None
+
+
+def render(state: game.State):
+    global prev
+    if prev is None:
+        prev = copy.copy(state)
+
     while True:
         draw_grid()
 
         # リンゴを描画
-        if curr.apple:
+        if state.apple:
             engine.draw.circle(
-                FOOD_COLOR, curr.apple * game.GRID_SIZE, game.GRID_SIZE / 3
+                FOOD_COLOR, state.apple * game.GRID_SIZE, game.GRID_SIZE / 3
             )
 
         # 円を描画。頭を最前面に描画するために逆順に
-        if len(prev.body) != len(curr.body):
+        if len(prev.body) != len(state.body):
             prev.body = [prev.body[0]] + prev.body
-        for i in range(len(curr.body) - 1, -1, -1):
+        for i in range(len(state.body) - 1, -1, -1):
             pr = prev.body[i]
-            cr = curr.body[i]
+            cr = state.body[i]
             x = engine.lerp(
                 pr.x * game.GRID_SIZE, cr.x * game.GRID_SIZE, ease_out(dt, 1.5)
             )

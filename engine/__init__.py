@@ -7,9 +7,9 @@ from . import draw  # pyright: ignore[reportUnusedImport]
 
 
 def run[S, M](
-    simulate: Callable[[S, M], S | None],
+    simulate: Callable[[S, M], bool],
     decide: Callable[[], Generator[None, None, M]],
-    render: Callable[[S, S], Generator[None, None, NoReturn]],
+    render: Callable[[S], Generator[None, None, NoReturn]],
     initialize: Callable[[], S],
 ) -> None:
     pygame.init()  # Pygameの初期化
@@ -41,13 +41,12 @@ def run[S, M](
         ## シミュレーションループ ##
         ############################
 
-        prev = initialize()
-        curr = initialize()
+        state = initialize()
 
         while True:
             # 規定の時間が経過するまで描画ループ
             simstart = pygame.time.get_ticks()
-            draw = render(prev, curr)
+            draw = render(state)
             act = decide()
             elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
             while True:
@@ -78,13 +77,9 @@ def run[S, M](
                 clock.tick(fps)
 
             # 時間が来たらゲーム世界を進める
-            next_state = simulate(copy.copy(curr), msg)
-            if next_state is None:
-                prev = curr
-                curr = initialize()
-            else:
-                prev = curr
-                curr = next_state
+            simulation_running = simulate(state, msg)
+            if not simulation_running:
+                state = initialize()
 
     finally:
         # Pygameの終了
