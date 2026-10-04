@@ -1,3 +1,7 @@
+"""
+engine/__init__.py
+"""
+
 import pygame
 from typing import Callable, Generator, NoReturn
 import copy
@@ -8,7 +12,7 @@ from . import draw  # pyright: ignore[reportUnusedImport]
 
 def run[S, M](
     simulate: Callable[[S, M], bool],
-    decide: Callable[[], Generator[None, None, M]],
+    decide: Callable[[S], Generator[None, None, M]],
     render: Callable[[S], None],
     initialize: Callable[[], S],
 ) -> None:
@@ -48,7 +52,7 @@ def run[S, M](
         while True:
             # 規定の時間が経過するまで描画ループ
             simstart = pygame.time.get_ticks()
-            act = decide()
+            act = decide(state)
             elapsed = 0.0  # 最後に状態が更新されてからの経過時間（秒）
             while True:
                 # 経過時間の計算
@@ -88,7 +92,32 @@ def run[S, M](
         pygame.quit()
 
 
+# ===================
+# ユーティリティ
+# ===================
+
+
 def lerp(start: float, end: float, easing: Callable[[float], float]) -> float:
+    """イージング関数を適用して、2つの値の間を線形補間（Lerp）します。
+
+    グローバル変数 `engine.elapsed`（0.0〜1.0 の経過割合）をベースに、
+    指定されたイージング関数で加速・減速などの変化を加えた補間値を計算します。
+
+    Args:
+        start (float): 補間の開始値（elapsed=0 のときの値）。
+        end (float): 補間の終了値（elapsed=1 のときの値）。
+        easing (Callable[[float], float]): 進行度（0.0〜1.0）を入力し、
+            変形された進行度（0.0〜1.0）を返すイージング関数。
+
+    Returns:
+        float: 補間された現在の値。
+    """
     global elapsed
     ratio = easing(elapsed)
     return start * (1 - ratio) + end * ratio
+
+
+def color(hex_str: str) -> tuple[int, int, int]:
+    """色のトリプルを作るユーティリティ関数。「#AA4B3C」のような文字列を指定する。"""
+    h = hex_str.lstrip("#")
+    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))

@@ -11,13 +11,12 @@ import copy
 import random
 
 # 色の定義
-BACKGROUND = (15, 56, 15)
-GRID_COLOR = (20, 80, 20)
-SNAKE_HEAD = (23, 200, 100)  # ミントグリーン
-SNAKE_BODY = (46, 139, 87)  # シーグリーン
-FOOD_COLOR = (220, 20, 60)  # クリムゾン
-TEXT_COLOR = (255, 255, 255)
-
+BACKGROUND = engine.color("#0F380F")  # 深い緑
+GRID_COLOR = engine.color("#145014")  # グリッド
+SNAKE_HEAD = engine.color("#17C864")  # ミントグリーン
+SNAKE_BODY = engine.color("#2E8B57")  # シーグリーン
+FOOD_COLOR = engine.color("#DC143C")  # クリムゾン
+TEXT_COLOR = engine.color("#FFFFFF")  # 白
 
 dt = 0.3
 engine.draw.camera.set_offset(
@@ -81,7 +80,7 @@ def render(state: game.State):
 
 
 # キーボード操作によって行動を決定する関数
-def decide():
+def decide(_: game.State):
     action: game.Action = None
     while engine.elapsed < dt:
         keys = pygame.key.get_pressed()
@@ -99,7 +98,7 @@ def decide():
 
 
 # ランダムに行動を決定する関数
-def decide_random():
+def decide_random(_: game.State):
     while engine.elapsed < dt:
         yield
 
@@ -115,26 +114,14 @@ import snake_game.game as game
 model = PPO.load("snake_ppo_model")
 env = SnakeEnv()
 
-# 2. 最初のリセット
-obs, _ = env.reset()
-
 
 # ★ AIが行動を決定する関数
-def decide_ai():
-    global obs
+def decide_ai(state: game.State):
     while engine.elapsed < dt:
         yield
-
-    # AIに次の手を予測させる
+    env.state = state  # engineのstateをenvに同期
+    obs = env._get_obs()  # 最新状態から観測生成
     action, _ = model.predict(obs, deterministic=True)
-
-    # Gym環境を進める
-    obs, reward, terminated, truncated, _ = env.step(int(action))
-
-    # ゲームオーバーになったら自動リセット
-    if terminated or truncated:
-        obs, _ = env.reset()
-
     return int(action)
 
 
