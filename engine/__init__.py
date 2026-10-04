@@ -3,8 +3,7 @@ engine/__init__.py
 """
 
 import pygame
-from typing import Callable, Generator, NoReturn
-import copy
+from typing import Callable, Generator
 
 # engine.draw公開
 from . import draw  # pyright: ignore[reportUnusedImport]
@@ -15,6 +14,7 @@ def run[S, M](
     decide: Callable[[S], Generator[None, None, M]],
     render: Callable[[S], None],
     initialize: Callable[[], S],
+    window_title: str = "Pygame サンプル",
 ) -> None:
     pygame.init()  # Pygameの初期化
     try:  # 必ずpygame.quit()が呼ばれるようにtryで囲む
@@ -32,7 +32,7 @@ def run[S, M](
         # 画面サイズ設定
         WIDTH, HEIGHT = 800, 600
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Pygame サンプル")
+        pygame.display.set_caption(window_title)
 
         # フレームレート設定
         clock = pygame.time.Clock()
@@ -57,7 +57,7 @@ def run[S, M](
             while True:
                 # 経過時間の計算
                 now = pygame.time.get_ticks()
-                elapsed = (now - simstart) / 1000
+                elapsed = (now - simstart) / 1000  # ミリ秒を秒に直す
 
                 # イベント処理・終了判定
                 if pygame.key.get_pressed()[pygame.K_q]:
@@ -95,19 +95,16 @@ def run[S, M](
 # ===================
 # ユーティリティ
 # ===================
-
-
 def lerp(start: float, end: float, easing: Callable[[float], float]) -> float:
-    """イージング関数を適用して、2つの値の間を線形補間（Lerp）します。
+    """経過時間（秒）とイージング関数を用いて、2つの値の間を線形補間（Lerp）します。
 
-    グローバル変数 `engine.elapsed`（0.0〜1.0 の経過割合）をベースに、
-    指定されたイージング関数で加速・減速などの変化を加えた補間値を計算します。
+    グローバル変数 `elapsed`（秒単位の経過時間）をそのままイージング関数に渡し、
+    得られた補間割合（ratio）に基づいて開始値から終了値までの現在の値を計算します。
 
     Args:
-        start (float): 補間の開始値（elapsed=0 のときの値）。
-        end (float): 補間の終了値（elapsed=1 のときの値）。
-        easing (Callable[[float], float]): 進行度（0.0〜1.0）を入力し、
-            変形された進行度（0.0〜1.0）を返すイージング関数。
+        start (float): 補間の開始値。
+        end (float): 補間の終了値。
+        easing (Callable[[float], float]): 経過時間（float）を受け取り、補間割合（0.0〜1.0）を返す関数。
 
     Returns:
         float: 補間された現在の値。
@@ -115,9 +112,3 @@ def lerp(start: float, end: float, easing: Callable[[float], float]) -> float:
     global elapsed
     ratio = easing(elapsed)
     return start * (1 - ratio) + end * ratio
-
-
-def color(hex_str: str) -> tuple[int, int, int]:
-    """色のトリプルを作るユーティリティ関数。「#AA4B3C」のような文字列を指定する。"""
-    h = hex_str.lstrip("#")
-    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))

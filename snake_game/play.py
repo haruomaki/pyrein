@@ -2,6 +2,7 @@
 snake_game/play.py
 """
 
+import sys
 import engine
 import snake_game.game as game
 import pygame
@@ -11,12 +12,12 @@ import copy
 import random
 
 # 色の定義
-BACKGROUND = engine.color("#0F380F")  # 深い緑
-GRID_COLOR = engine.color("#145014")  # グリッド
-SNAKE_HEAD = engine.color("#17C864")  # ミントグリーン
-SNAKE_BODY = engine.color("#2E8B57")  # シーグリーン
-FOOD_COLOR = engine.color("#DC143C")  # クリムゾン
-TEXT_COLOR = engine.color("#FFFFFF")  # 白
+BACKGROUND = "#0F380F"  # 深い緑
+GRID_COLOR = "#145014"  # グリッド
+SNAKE_HEAD = "#17C864"  # ミントグリーン
+SNAKE_BODY = "#2E8B57"  # シーグリーン
+FOOD_COLOR = "#DC143C"  # クリムゾン
+TEXT_COLOR = "#FFFFFF"  # 白
 
 dt = 0.3
 engine.draw.camera.set_offset(
@@ -105,41 +106,42 @@ def decide_random(_: game.State):
     return random.randint(0, 3)
 
 
-# TODO: AI関係のコードが散らかっているので整理したい
-from stable_baselines3 import PPO
-from snake_game.gym_env import SnakeEnv
-import snake_game.game as game
+# ★ AI は「ファクトリ関数」に。呼ばれた時だけ重い import とロードが走る
+def make_decide_ai(model_path: str):
+    from stable_baselines3 import PPO
+    from snake_game.gym_env import SnakeEnv
 
-# 1. 学習済みモデルと Gym 環境のロード
-model = PPO.load("snake_ppo_model")
-env = SnakeEnv()
+    model = PPO.load(model_path, device="cpu")
+    env = SnakeEnv()
+
+    def decide_ai(state: game.State):
+        while engine.elapsed < dt:
+            yield
+        env.state = state
+        obs = env._get_obs()
+        action, _ = model.predict(obs, deterministic=True)
+        return int(action)
+
+    return decide_ai
 
 
-# ★ AIが行動を決定する関数
-def decide_ai(state: game.State):
-    while engine.elapsed < dt:
-        yield
-    env.state = state  # engineのstateをenvに同期
-    obs = env._get_obs()  # 最新状態から観測生成
-    action, _ = model.predict(obs, deterministic=True)
-    return int(action)
+# コマンドライン引数で「human」「random」「ai」を選べる。
+if __name__ == "__main__":
+    args = sys.argv
+    MODE = args[1] if len(args) > 1 else "human"
 
+    match MODE.lower():
+        case "random":
+            decider = decide_random
+        case "ai":
+            decider = make_decide_ai("snake_ppo_model.zip")
+        case _:
+            decider = decide
 
-# engine.run(
-#     game.simulate,
-#     decide,
-#     render,
-#     game.initialize,
-# )
-# engine.run(
-#     game.simulate,
-#     decide_random,
-#     render,
-#     game.initialize,
-# )
-engine.run(
-    game.simulate,
-    decide_ai,
-    render,
-    game.initialize,
-)
+    engine.run(
+        game.simulate,
+        decider,
+        render,
+        game.initialize,
+        window_title="イモムシゲーム",
+    )
