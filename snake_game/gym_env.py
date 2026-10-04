@@ -5,7 +5,6 @@ snake_game/gym_env.py
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
-from pygame import Vector2 as Vec2
 import copy
 
 import snake_game.game as game
@@ -34,19 +33,19 @@ class SnakeEnv(gym.Env):
 
     # ---------- 観測変換 ----------
     def _get_obs(self) -> np.ndarray:
-        # obs[0]頭の位置頭があるマスだけ 1、それ以外 0
-        # obs[1]体の位置体があるマスだけ 1、それ以外 0
-        # obs[2]リンゴの位置リンゴがあるマスだけ 1、それ以外 0
+        # obs[0]頭の位置 頭があるマスだけ 1、それ以外 0
+        # obs[1]体の位置 体の寿命が0~1 + 0.1の実数値として入る
+        # obs[2]リンゴの位置 リンゴがあるマスだけ 1、それ以外 0
         obs = np.zeros((3, game.GRID_HEIGHT, game.GRID_WIDTH), dtype=np.float32)
 
         # 体（obs[1]）
-        for b in self.state.body:
-            obs[1, int(b.y), int(b.x)] = 1
+        for i, b in enumerate(self.state.body):
+            l = len(self.state.body)
+            obs[1, int(b.y), int(b.x)] = (l - i) / l + 0.1
 
-        # 頭（obs[0]）※体チャンネルからは頭の位置を消す
+        # 頭（obs[0]）
         head = self.state.body[0]
         obs[0, int(head.y), int(head.x)] = 1
-        obs[1, int(head.y), int(head.x)] = 0
 
         # リンゴ（obs[2]）
         if self.state.apple is not None:
@@ -75,33 +74,17 @@ class SnakeEnv(gym.Env):
         truncated = False
 
         if not alive:
-            reward = -1.0  # 壁にぶつかった
+            reward = -0.3  # 壁にぶつかった
             terminated = True
         elif len(self.state.body) > len(prev.body):
             reward = +1.0  # リンゴを食べた
-        else:
-            reward = -0.01  # 時間ペナルティ（任意）
-
-        # FIXME: これどうなん
-        assert prev.apple is not None
-        assert self.state.apple is not None
-
-        # リンゴとのマンハッタン距離を計算
-        prev_dist = abs(prev.body[0].x - prev.apple.x) + abs(
-            prev.body[0].x - prev.apple.x
-        )
-        curr_dist = abs(self.state.body[0].x - self.state.apple.x) + abs(
-            self.state.body[0].y - self.state.apple.y
-        )
-
-        # 前状態と比べてリンゴに近づいたら微プラス
-        if curr_dist < prev_dist:
-            reward += 0.005
+        # else:
+        #     reward = -0.01  # 時間ペナルティ（任意）
 
         # リンゴがなくなった = 全マス制覇
         if self.state.apple is None:
             terminated = True
-            reward = +2.0
+            reward = +10.0
 
         obs = self._get_obs()
         info = self._get_info()
