@@ -76,12 +76,30 @@ class SnakeEnv(gym.Env):
         truncated = False
 
         if not alive:
-            reward = -1.0
+            reward = -1.0  # 壁にぶつかった
             terminated = True
         elif len(self.state.body) > prev_len:
             reward = +1.0  # リンゴを食べた
         else:
-            reward = -0.01  # 時間ペナルティ（任意）
+            reward = -0.02  # 時間ペナルティ（任意）
+
+        # FIXME: これどうなん
+        assert prev_apple is not None
+        assert self.state.apple is not None
+
+        # # リンゴにどれだけ近づいたか計算
+        # prev_dist = abs(self.state.body[0].x - prev_apple.x) + abs(
+        #     self.state.body[0].y - prev_apple.y
+        # )
+        # curr_dist = abs(self.state.body[0].x - self.state.apple.x) + abs(
+        #     self.state.body[0].y - self.state.apple.y
+        # )
+
+        # # リンゴに近づいたら +0.1、遠ざかったら -0.1
+        # if curr_dist < prev_dist:
+        #     reward += 0.1
+        # else:
+        #     reward -= 0.1
 
         # リンゴがなくなった = 全マス制覇
         if self.state.apple is None:

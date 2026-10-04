@@ -80,6 +80,7 @@ def render(state: game.State):
         engine.draw.circle(color, (x, y), game.GRID_SIZE / 2)
 
 
+# キーボード操作によって行動を決定する関数
 def decide():
     action: game.Action = None
     while engine.elapsed < dt:
@@ -97,11 +98,44 @@ def decide():
     return action
 
 
+# ランダムに行動を決定する関数
 def decide_random():
     while engine.elapsed < dt:
         yield
 
     return random.randint(0, 3)
+
+
+# TODO: AI関係のコードが散らかっているので整理したい
+from stable_baselines3 import PPO
+from snake_game.gym_env import SnakeEnv
+import snake_game.game as game
+
+# 1. 学習済みモデルと Gym 環境のロード
+model = PPO.load("snake_ppo_model")
+env = SnakeEnv()
+
+# 2. 最初のリセット
+obs, _ = env.reset()
+
+
+# ★ AIが行動を決定する関数
+def decide_ai():
+    global obs
+    while engine.elapsed < dt:
+        yield
+
+    # AIに次の手を予測させる
+    action, _ = model.predict(obs, deterministic=True)
+
+    # Gym環境を進める
+    obs, reward, terminated, truncated, _ = env.step(int(action))
+
+    # ゲームオーバーになったら自動リセット
+    if terminated or truncated:
+        obs, _ = env.reset()
+
+    return int(action)
 
 
 # engine.run(
@@ -110,9 +144,15 @@ def decide_random():
 #     render,
 #     game.initialize,
 # )
+# engine.run(
+#     game.simulate,
+#     decide_random,
+#     render,
+#     game.initialize,
+# )
 engine.run(
     game.simulate,
-    decide_random,
+    decide_ai,
     render,
     game.initialize,
 )
