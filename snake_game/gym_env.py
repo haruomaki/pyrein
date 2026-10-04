@@ -6,6 +6,7 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from pygame import Vector2 as Vec2
+import copy
 
 import snake_game.game as game
 
@@ -65,9 +66,7 @@ class SnakeEnv(gym.Env):
 
     def step(self, action: int):
         assert self.state is not None
-        prev_len = len(self.state.body)
-        prev_apple = self.state.apple
-
+        prev = copy.copy(self.state)
         alive = game.simulate(self.state, int(action))
 
         # 報酬設計
@@ -78,28 +77,26 @@ class SnakeEnv(gym.Env):
         if not alive:
             reward = -1.0  # 壁にぶつかった
             terminated = True
-        elif len(self.state.body) > prev_len:
+        elif len(self.state.body) > len(prev.body):
             reward = +1.0  # リンゴを食べた
         else:
-            reward = -0.02  # 時間ペナルティ（任意）
+            reward = -0.01  # 時間ペナルティ（任意）
 
         # FIXME: これどうなん
-        assert prev_apple is not None
+        assert prev.apple is not None
         assert self.state.apple is not None
 
-        # # リンゴにどれだけ近づいたか計算
-        # prev_dist = abs(self.state.body[0].x - prev_apple.x) + abs(
-        #     self.state.body[0].y - prev_apple.y
-        # )
-        # curr_dist = abs(self.state.body[0].x - self.state.apple.x) + abs(
-        #     self.state.body[0].y - self.state.apple.y
-        # )
+        # リンゴとのマンハッタン距離を計算
+        prev_dist = abs(prev.body[0].x - prev.apple.x) + abs(
+            prev.body[0].x - prev.apple.x
+        )
+        curr_dist = abs(self.state.body[0].x - self.state.apple.x) + abs(
+            self.state.body[0].y - self.state.apple.y
+        )
 
-        # # リンゴに近づいたら +0.1、遠ざかったら -0.1
-        # if curr_dist < prev_dist:
-        #     reward += 0.1
-        # else:
-        #     reward -= 0.1
+        # 前状態と比べてリンゴに近づいたら微プラス
+        if curr_dist < prev_dist:
+            reward += 0.005
 
         # リンゴがなくなった = 全マス制覇
         if self.state.apple is None:
