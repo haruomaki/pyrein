@@ -19,6 +19,7 @@ SNAKE_BODY = "#2E8B57"  # シーグリーン
 FOOD_COLOR = "#DC143C"  # クリムゾン
 TEXT_COLOR = "#FFFFFF"  # 白
 
+POWER = 1.5  # 描画用のパラメータ。マスの移動のメリハリ
 dt = 0.3
 engine.draw.camera.set_offset(
     (game.GRID_WIDTH - 1) / 2 * game.GRID_SIZE,
@@ -74,10 +75,9 @@ def render(state: game.State):
     for i in range(len(curr.body) - 1, -1, -1):
         pr = prev.body[i]
         cr = curr.body[i]
-        x = engine.lerp(pr.x * game.GRID_SIZE, cr.x * game.GRID_SIZE, ease_out(dt, 1.5))
-        y = engine.lerp(pr.y * game.GRID_SIZE, cr.y * game.GRID_SIZE, ease_out(dt, 1.5))
+        pos = engine.lerp(pr * game.GRID_SIZE, cr * game.GRID_SIZE, ease_out(dt, POWER))
         color = SNAKE_HEAD if i == 0 else SNAKE_BODY
-        engine.draw.circle(color, (x, y), game.GRID_SIZE / 2)
+        engine.draw.circle(color, pos, game.GRID_SIZE / 2)
 
 
 # キーボード操作によって行動を決定する関数
@@ -106,6 +106,31 @@ def decide_random(_: game.State):
     return random.randint(0, 3)
 
 
+# サンプリング用の関数。TODO: engineの一部にする？
+import numpy as np
+import torch
+
+
+def sample_with_top_k(distribution, top_k: int = 2, temperature: float = 1.0) -> int:
+    """Logits（未正規化の確率）からTop-kおよびTemperatureを適用して行動を選択する"""
+    logits = distribution.distribution.logits.clone()
+
+    # 1. Top-k 以外の選択肢をマスク（-inf に設定）
+    if top_k > 0 and top_k < logits.size(-1):
+        indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1:]
+        logits[indices_to_remove] = float("-inf")
+
+    # 2. Temperature の適用
+    if temperature != 1.0:
+        logits = logits / temperature
+
+    # 3. Softmax で確率分布に変換
+    probs = torch.softmax(logits, dim=-1).cpu().numpy().squeeze()
+
+    # 4. 確率に従ってサンプリング
+    return int(np.random.choice(len(probs), p=probs))
+
+
 # ★ AI は「ファクトリ関数」に。呼ばれた時だけ重い import とロードが走る
 def make_decide_ai(model_path: str):
     from stable_baselines3 import PPO
@@ -119,8 +144,15 @@ def make_decide_ai(model_path: str):
             yield
         env.state = state
         obs = env._get_obs()
-        action, _ = model.predict(obs, deterministic=True)
-        return int(action)
+
+        obs_tensor, _ = model.policy.obs_to_tensor(obs)
+
+        with torch.no_grad():
+            dist = model.policy.get_distribution(obs_tensor)
+            # 独立させたパーツを呼び出す（上位2手から、わずかにランダム性を持たせて選ぶ）
+            action = sample_with_top_k(dist, top_k=2, temperature=0.1)
+
+        return action
 
     return decide_ai
 
@@ -134,6 +166,8 @@ if __name__ == "__main__":
         case "random":
             decider = decide_random
         case "ai":
+            dt = 0.1
+            POWER = 1  # なめらかにアニメーション
             decider = make_decide_ai("snake_ppo_model.zip")
         case _:
             decider = decide
@@ -144,4 +178,5 @@ if __name__ == "__main__":
         render,
         game.initialize,
         window_title="イモムシゲーム",
+        window_size=(560, 420),
     )

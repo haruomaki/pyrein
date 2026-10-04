@@ -9,7 +9,7 @@ from snake_game.gym_env import SnakeEnv
 
 MODEL_PATH = "snake_ppo_model.zip"
 LOG_DIR = "./tensorboard_logs/"  # ログの保存先フォルダを指定
-TOTAL_TIMESTEPS = 500000  # 学習ステップ数
+TOTAL_TIMESTEPS = 1000000  # 学習ステップ数
 
 if __name__ == "__main__":
     # CPUスレッド数の環境で並列化
@@ -28,12 +28,13 @@ if __name__ == "__main__":
             device="cpu",  # CPUで計算
             verbose=1,  # 進捗表示
             learning_rate=0.0003,  # 学習率
-            ent_coef=0.04,  # 探索を促す
-            gamma=0.995,  # 割引率
+            ent_coef=0.02,  # 探索を促す
+            gamma=0.997,  # 割引率
+            clip_range=0.1,
             n_steps=512,  # 更新前に集めるステップ数
             batch_size=64,  # ミニバッチサイズ
             n_epochs=4,  # データを繰り返す回数
-            policy_kwargs=dict(net_arch=[256, 256, 128]),  # NNの形状
+            policy_kwargs=dict(net_arch=[256, 256]),  # NNの形状
             tensorboard_log=LOG_DIR,
         )
         model.learn(total_timesteps=TOTAL_TIMESTEPS)

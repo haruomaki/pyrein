@@ -39,9 +39,11 @@ class SnakeEnv(gym.Env):
         obs = np.zeros((3, game.GRID_HEIGHT, game.GRID_WIDTH), dtype=np.float32)
 
         # 体（obs[1]）
-        for i, b in enumerate(self.state.body):
-            l = len(self.state.body)
-            obs[1, int(b.y), int(b.x)] = (l - i) / l + 0.1
+        # for i, b in enumerate(self.state.body):
+        #     l = len(self.state.body)
+        #     obs[1, int(b.y), int(b.x)] = (l - i) / l + 0.1
+        for b in self.state.body:
+            obs[1, int(b.y), int(b.x)] = 1
 
         # 頭（obs[0]）
         head = self.state.body[0]
@@ -74,7 +76,7 @@ class SnakeEnv(gym.Env):
         truncated = False
 
         if not alive:
-            reward = -0.3  # 壁にぶつかった
+            reward = -1.0  # 壁にぶつかった
             terminated = True
         elif len(self.state.body) > len(prev.body):
             reward = +1.0  # リンゴを食べた
