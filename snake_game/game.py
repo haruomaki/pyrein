@@ -1,10 +1,14 @@
+"""
+snake_game/game.py
+"""
+
 from pygame import Vector2 as Vec2
 from dataclasses import dataclass
 from random import choice
 
-GRID_SIZE = 30
-GRID_WIDTH = 4
-GRID_HEIGHT = 4
+GRID_SIZE = 40
+GRID_WIDTH = 8
+GRID_HEIGHT = 8
 
 
 @dataclass
@@ -38,7 +42,7 @@ def simulate(state: State, action: Action) -> bool:
         or GRID_HEIGHT <= new_head.y
         or new_head in state.body[:-1]
     ):
-        print("ゲームオーバー！", len(state.body))
+        # print("ゲームオーバー！", len(state.body))
         return False
 
     # 移動先がエサであれば
@@ -54,7 +58,7 @@ def simulate(state: State, action: Action) -> bool:
         for b in state.body:
             cand.remove((b.x, b.y))
 
-        print("リンゴを食べました。")
+        # print("リンゴを食べました。")
         if len(cand) == 0:
             state.apple = None
         else:

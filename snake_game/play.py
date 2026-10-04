@@ -1,9 +1,14 @@
+"""
+snake_game/play.py
+"""
+
 import engine
 import snake_game.game as game
 import pygame
 from pygame import Vector2 as Vec2
 from engine.easing import ease_out
 import copy
+import random
 
 # 色の定義
 BACKGROUND = (15, 56, 15)
@@ -92,9 +97,22 @@ def decide():
     return action
 
 
+def decide_random():
+    while engine.elapsed < dt:
+        yield
+
+    return random.randint(0, 3)
+
+
+# engine.run(
+#     game.simulate,
+#     decide,
+#     render,
+#     game.initialize,
+# )
 engine.run(
     game.simulate,
-    decide,
+    decide_random,
     render,
     game.initialize,
 )
