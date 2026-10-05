@@ -72,3 +72,8 @@ def circle(
         draw_bottom_left,
         draw_bottom_right,
     )
+
+
+def text(text: str, color: ColorValue, pos: Coordinate):
+    text_surface = engine.font.render(text, True, color)
+    engine.screen.blit(text_surface, pos)

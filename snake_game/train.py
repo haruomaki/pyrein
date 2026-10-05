@@ -9,7 +9,7 @@ from snake_game.gym_env import SnakeEnv
 
 MODEL_PATH = "snake_ppo_model.zip"
 LOG_DIR = "./tensorboard_logs/"  # ログの保存先フォルダを指定
-TOTAL_TIMESTEPS = 1000000  # 学習ステップ数
+TOTAL_TIMESTEPS = 10000000  # 学習ステップ数
 
 if __name__ == "__main__":
     # CPUスレッド数の環境で並列化

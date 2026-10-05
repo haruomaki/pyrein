@@ -51,14 +51,13 @@ current_step: int = 0
 
 def render(state: game.State):
     global prev, curr, current_step
-    if engine.step == 0:
+    if prev is None:
         prev = copy.copy(state)
-        curr = copy.copy(state)
     elif engine.step != current_step:
         current_step = engine.step
         # print("prevとcurrが更新")
-        prev = curr
-        curr = copy.copy(state)
+        prev = copy.copy(curr)
+    curr = copy.copy(state)
 
     assert prev is not None
     assert curr is not None
@@ -78,6 +77,9 @@ def render(state: game.State):
         pos = engine.lerp(pr * game.GRID_SIZE, cr * game.GRID_SIZE, ease_out(dt, POWER))
         color = SNAKE_HEAD if i == 0 else SNAKE_BODY
         engine.draw.circle(color, pos, game.GRID_SIZE / 2)
+
+    # 蛇の長さを表示
+    engine.draw.text(f"Length: {len(curr.body)}", TEXT_COLOR, (10, 10))
 
 
 # キーボード操作によって行動を決定する関数
@@ -150,7 +152,7 @@ def make_decide_ai(model_path: str):
         with torch.no_grad():
             dist = model.policy.get_distribution(obs_tensor)
             # 独立させたパーツを呼び出す（上位2手から、わずかにランダム性を持たせて選ぶ）
-            action = sample_with_top_k(dist, top_k=2, temperature=0.1)
+            action = sample_with_top_k(dist, top_k=2, temperature=0.2)
 
         return action
 

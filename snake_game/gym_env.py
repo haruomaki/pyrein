@@ -34,16 +34,16 @@ class SnakeEnv(gym.Env):
     # ---------- 観測変換 ----------
     def _get_obs(self) -> np.ndarray:
         # obs[0]頭の位置 頭があるマスだけ 1、それ以外 0
-        # obs[1]体の位置 体の寿命が0~1 + 0.1の実数値として入る
+        # obs[1]体の位置 体の各マスの寿命が整数値として入る
         # obs[2]リンゴの位置 リンゴがあるマスだけ 1、それ以外 0
         obs = np.zeros((3, game.GRID_HEIGHT, game.GRID_WIDTH), dtype=np.float32)
 
         # 体（obs[1]）
-        # for i, b in enumerate(self.state.body):
-        #     l = len(self.state.body)
-        #     obs[1, int(b.y), int(b.x)] = (l - i) / l + 0.1
-        for b in self.state.body:
-            obs[1, int(b.y), int(b.x)] = 1
+        for i, b in enumerate(self.state.body):
+            l = len(self.state.body)
+            obs[1, int(b.y), int(b.x)] = l - i
+        # for b in self.state.body:
+        #     obs[1, int(b.y), int(b.x)] = 1
 
         # 頭（obs[0]）
         head = self.state.body[0]

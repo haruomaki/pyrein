@@ -24,7 +24,7 @@ def run[S, M](
         ## グローバル変数の宣言 ##
         ##########################
 
-        global screen, elapsed, fps
+        global screen, elapsed, fps, font
 
         ################
         ## 初期化処理 ##
@@ -40,6 +40,9 @@ def run[S, M](
 
         # 色の定義
         BLACK = (0, 0, 0)
+
+        # 日本語フォント設定（環境に合わせて変えてください）
+        font = pygame.font.SysFont("UDEV Gothic 35NF Regular", 24)
 
         ############################
         ## シミュレーションループ ##
@@ -87,7 +90,7 @@ def run[S, M](
             # ポーリング中にRキーが押されていたら、状態を進めるのではなく初期状態にする。
             if reset_flag:
                 state = initialize()
-                step = 0
+                step += 1
                 continue
 
             # 時間が来たらゲーム世界を進める
