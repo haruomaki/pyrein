@@ -7,13 +7,17 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from snake_game.gym_env import SnakeEnv
 
-MODEL_PATH = "snake_ppo_model.zip"
-LOG_DIR = "./tensorboard_logs/"  # ログの保存先フォルダを指定
-TOTAL_TIMESTEPS = 10000000  # 学習ステップ数
+MODEL_PATH = "./models/PPO_1/model.zip"
+LOG_DIR = "./models/"  # ログの保存先フォルダを指定
+TOTAL_TIMESTEPS = 30000000  # 学習ステップ数
 
 if __name__ == "__main__":
     # CPUスレッド数の環境で並列化
-    env = make_vec_env(SnakeEnv, n_envs=16)
+    env = make_vec_env(
+        SnakeEnv,
+        n_envs=16,
+        monitor_kwargs={"info_keywords": ("length",)},
+    )
 
     if os.path.exists(MODEL_PATH):
         print(f'"{MODEL_PATH}" が見つかりました。追加学習を開始します！')
@@ -29,15 +33,15 @@ if __name__ == "__main__":
             verbose=1,  # 進捗表示
             learning_rate=0.0003,  # 学習率
             ent_coef=0.02,  # 探索を促す
-            gamma=0.997,  # 割引率
-            clip_range=0.1,
+            gamma=0.995,  # 割引率
+            clip_range=0.2,  # 学習が後半停滞しないよう、ある程度大きく
             n_steps=512,  # 更新前に集めるステップ数
             batch_size=64,  # ミニバッチサイズ
             n_epochs=4,  # データを繰り返す回数
             policy_kwargs=dict(net_arch=[256, 256]),  # NNの形状
             tensorboard_log=LOG_DIR,
         )
-        model.learn(total_timesteps=TOTAL_TIMESTEPS)
+        model.learn(total_timesteps=TOTAL_TIMESTEPS, progress_bar=True)
 
     # 学習完了後に保存
     model.save(MODEL_PATH)

@@ -163,5 +163,6 @@ cython_debug/
 #.idea/
 
 # 学習モデル、学習ログ
+models/
 *.zip
 *logs

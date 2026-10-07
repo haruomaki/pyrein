@@ -34,14 +34,14 @@ class SnakeEnv(gym.Env):
     # ---------- 観測変換 ----------
     def _get_obs(self) -> np.ndarray:
         # obs[0]頭の位置 頭があるマスだけ 1、それ以外 0
-        # obs[1]体の位置 体の各マスの寿命が整数値として入る
+        # obs[1]体の位置 体の各マスの寿命が0~1の実数として入る
         # obs[2]リンゴの位置 リンゴがあるマスだけ 1、それ以外 0
         obs = np.zeros((3, game.GRID_HEIGHT, game.GRID_WIDTH), dtype=np.float32)
 
         # 体（obs[1]）
         for i, b in enumerate(self.state.body):
             l = len(self.state.body)
-            obs[1, int(b.y), int(b.x)] = l - i
+            obs[1, int(b.y), int(b.x)] = (l - i) / l
         # for b in self.state.body:
         #     obs[1, int(b.y), int(b.x)] = 1
 
@@ -80,8 +80,8 @@ class SnakeEnv(gym.Env):
             terminated = True
         elif len(self.state.body) > len(prev.body):
             reward = +1.0  # リンゴを食べた
-        # else:
-        #     reward = -0.01  # 時間ペナルティ（任意）
+        else:
+            reward = -0.01  # 時間ペナルティ（任意）
 
         # リンゴがなくなった = 全マス制覇
         if self.state.apple is None:

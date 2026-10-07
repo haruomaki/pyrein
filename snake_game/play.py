@@ -170,7 +170,7 @@ if __name__ == "__main__":
         case "ai":
             dt = 0.1
             POWER = 1  # なめらかにアニメーション
-            decider = make_decide_ai("snake_ppo_model.zip")
+            decider = make_decide_ai("./models/PPO_1/model.zip")
         case _:
             decider = decide
 
